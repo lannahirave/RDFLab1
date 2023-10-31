@@ -1,0 +1,13 @@
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\bin\Debug\net8.0\DataRaw\CountriesData.csv
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\bin\Debug\net8.0\DatabaseRDF.deps.json
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\bin\Debug\net8.0\DatabaseRDF.dll
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\bin\Debug\net8.0\DatabaseRDF.pdb
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.csproj.AssemblyReference.cache
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.AssemblyInfoInputs.cache
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.AssemblyInfo.cs
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.csproj.CoreCompileInputs.cache
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.dll
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\refint\DatabaseRDF.dll
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\DatabaseRDF.pdb
+C:\Users\valerii\RiderProjects\RDFLab1\DatabaseRDF\obj\Debug\net8.0\ref\DatabaseRDF.dll
