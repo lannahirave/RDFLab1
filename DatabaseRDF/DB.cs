@@ -1,9 +1,11 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using CsvHelper;
+using J2N.Collections.Generic;
 using VDS.RDF;
-using VDS.RDF.Parsing;
-using VDS.RDF.Query;
 
 namespace DatabaseRDF;
 
@@ -119,7 +121,7 @@ public class DatabaseRdf
 
         return "Not found";
     }
-    
+
     public bool UpdateInfo(string country, string valueToSeach, string newValue)
     {
         var graph = GetInstance().Graph;
