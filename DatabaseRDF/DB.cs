@@ -1,10 +1,6 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using System.Globalization;
 using System.Reflection;
 using CsvHelper;
-using J2N.Collections.Generic;
 using VDS.RDF;
 
 namespace DatabaseRDF;
@@ -44,55 +40,52 @@ public class DatabaseRdf
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
                 throw new InvalidOperationException(), @"DataRaw\CountriesData.csv");
 
-        using (var reader = new StreamReader(filePath))
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        var records = csv.GetRecords<Country>();
+
+        // Отримуємо граф
+        var graph = GetInstance().Graph;
+
+        // Створюємо вузли для предикатів
+
+        var namePredicate = graph.CreateUriNode(new Uri("http://data.countries/name"));
+        var capitalPredicate = graph.CreateUriNode(new Uri("http://data.countries/capital"));
+        var longPredicate = graph.CreateUriNode(new Uri("http://data.countries/longitude"));
+        var latPredicate = graph.CreateUriNode(new Uri("http://data.countries/latitude"));
+        var typePredicate = graph.CreateUriNode(new Uri("http://data.countries/capitalType"));
+        var popPredicate = graph.CreateUriNode(new Uri("http://data.countries/population"));
+        // Обробка записів
+        foreach (var record in records)
         {
-            var records = csv.GetRecords<Country>();
+            var countryUri = new Uri($"http://data.countries/{record.Name}");
+            var countryNode = graph.CreateUriNode(countryUri);
+            List<Triple> triples = new();
+            // Name
+            var nameNode = graph.CreateLiteralNode(record.Name);
+            triples.Add(new Triple(countryNode, namePredicate, nameNode));
 
-            // Отримуємо граф
-            var graph = GetInstance().Graph;
+            // Capital 
+            var capitalNode = graph.CreateLiteralNode(record.Capital);
+            triples.Add(new Triple(countryNode, capitalPredicate, capitalNode));
 
-            // Створюємо вузли для предикатів
+            // Latitude
+            var latNode = graph.CreateLiteralNode(record.Latitude.ToString());
+            triples.Add(new Triple(countryNode, latPredicate, latNode));
 
-            var namePredicate = graph.CreateUriNode(new Uri("http://data.countries/name"));
-            var capitalPredicate = graph.CreateUriNode(new Uri("http://data.countries/capital"));
-            var populationPredicate = graph.CreateUriNode(new Uri("http://data.countries/population"));
-            var longPredicate = graph.CreateUriNode(new Uri("http://data.countries/longitude"));
-            var latPredicate = graph.CreateUriNode(new Uri("http://data.countries/latitude"));
-            var typePredicate = graph.CreateUriNode(new Uri("http://data.countries/capitalType"));
-            var popPredicate = graph.CreateUriNode(new Uri("http://data.countries/population"));
-            // Обробка записів
-            foreach (var record in records)
-            {
-                var countryUri = new Uri($"http://data.countries/{record.Name}");
-                var countryNode = graph.CreateUriNode(countryUri);
-                List<Triple> triples = new();
-                // Name
-                var nameNode = graph.CreateLiteralNode(record.Name);
-                triples.Add(new Triple(countryNode, namePredicate, nameNode));
+            // Longitude
+            var longNode = graph.CreateLiteralNode(record.Longitude.ToString());
+            triples.Add(new Triple(countryNode, longPredicate, longNode));
 
-                // Capital 
-                var capitalNode = graph.CreateLiteralNode(record.Capital);
-                triples.Add(new Triple(countryNode, capitalPredicate, capitalNode));
+            // Population
+            var popNode = graph.CreateLiteralNode(record.Population.ToString());
+            triples.Add(new Triple(countryNode, popPredicate, popNode));
 
-                // Latitude
-                var latNode = graph.CreateLiteralNode(record.Latitude.ToString());
-                triples.Add(new Triple(countryNode, latPredicate, latNode));
+            // CapitalType
+            var typeNode = graph.CreateLiteralNode(record.CapitalType);
+            triples.Add(new Triple(countryNode, typePredicate, typeNode));
 
-                // Longitude
-                var longNode = graph.CreateLiteralNode(record.Longitude.ToString());
-                triples.Add(new Triple(countryNode, longPredicate, longNode));
-
-                // Population
-                var popNode = graph.CreateLiteralNode(record.Population.ToString());
-                triples.Add(new Triple(countryNode, popPredicate, popNode));
-
-                // CapitalType
-                var typeNode = graph.CreateLiteralNode(record.CapitalType);
-                triples.Add(new Triple(countryNode, typePredicate, typeNode));
-
-                graph.Assert(triples);
-            }
+            graph.Assert(triples);
         }
     }
 
