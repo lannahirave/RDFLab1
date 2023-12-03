@@ -1,36 +1,33 @@
 ﻿using System.Globalization;
 using System.Reflection;
 using CsvHelper;
+using DatabaseRDF.Exceptions;
+using DatabaseRDF.FRP;
 using VDS.RDF;
 
 namespace DatabaseRDF;
 
 public class DatabaseRdf
 {
-    private DatabaseRdf()
-    {
-    }
-
     private static DatabaseRdf? _instance;
 
     private static readonly object Lock = new();
+
+    private IGraph Graph { get; init; } = null!;
 
     public static DatabaseRdf GetInstance()
     {
         if (_instance is null)
             lock (Lock)
             {
-                if (_instance == null)
+                _instance ??= new DatabaseRdf
                 {
-                    _instance = new DatabaseRdf();
-                    _instance.Graph = new Graph();
-                }
+                    Graph = new Graph()
+                };
             }
 
         return _instance;
     }
-
-    private IGraph Graph { get; set; }
 
 
     public static void LoadDataFromDefaultCsvFile()
@@ -70,11 +67,11 @@ public class DatabaseRdf
             triples.Add(new Triple(countryNode, capitalPredicate, capitalNode));
 
             // Latitude
-            var latNode = graph.CreateLiteralNode(record.Latitude.ToString());
+            var latNode = graph.CreateLiteralNode(record.Latitude.ToString(CultureInfo.InvariantCulture));
             triples.Add(new Triple(countryNode, latPredicate, latNode));
 
             // Longitude
-            var longNode = graph.CreateLiteralNode(record.Longitude.ToString());
+            var longNode = graph.CreateLiteralNode(record.Longitude.ToString(CultureInfo.InvariantCulture));
             triples.Add(new Triple(countryNode, longPredicate, longNode));
 
             // Population
@@ -89,7 +86,7 @@ public class DatabaseRdf
         }
     }
 
-    public string GetInfo(string countryName, string valueToSeach)
+    public string GetInfo(string countryName, string valueToSearch)
     {
         var graph = GetInstance().Graph;
 
@@ -97,14 +94,11 @@ public class DatabaseRdf
 
         var countryNode = graph.CreateUriNode(countryUri);
 
-        var predicate = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSeach}"));
-
-        var capitalPredicateLower = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSeach.ToLower()}"));
+        var predicate = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSearch}"));
 
         var results = graph.GetTriplesWithSubjectPredicate(countryNode, predicate);
 
         var enumerable = results.ToList();
-        enumerable.AddRange(graph.GetTriplesWithSubjectPredicate(countryNode, capitalPredicateLower));
         if (enumerable.Any())
         {
             var capitalNode = enumerable.First().Object;
@@ -112,10 +106,41 @@ public class DatabaseRdf
             if (capitalNode is ILiteralNode literalNode) return literalNode.Value;
         }
 
-        return "Not found";
+        throw new NotFoundException("Unable to find value");
+    }
+    
+    public string LookupFrp(string countryName, string frpValueToWorkOut)
+    {
+        var graph = GetInstance().Graph;
+
+        var countryUri = new Uri($"http://data.countries/{countryName}");
+
+        var countryNode = graph.CreateUriNode(countryUri);
+
+        var valueToLookUpFor = RulesIdentifier.GetRuleMapper(frpValueToWorkOut);
+        
+        var predicate = graph.CreateUriNode(new Uri($"http://data.countries/{valueToLookUpFor.Item2}"));
+
+        var results = graph.GetTriplesWithSubjectPredicate(countryNode, predicate);
+
+        var enumerable = results.ToList();
+        string result = string.Empty;
+        if (enumerable.Any())
+        {
+            var capitalNode = enumerable.First().Object;
+            if (capitalNode is ILiteralNode literalNode)
+                result = literalNode.Value;
+        }
+        else
+        {
+            throw new NotFoundException($"Unable to retrieve {valueToLookUpFor.Item2} from {countryName}.");
+        }
+        
+        return valueToLookUpFor.Item1(int.Parse(result));
+
     }
 
-    public bool UpdateInfo(string country, string valueToSeach, string newValue)
+    public bool UpdateInfo(string country, string valueToSearch, string newValue)
     {
         var graph = GetInstance().Graph;
 
@@ -123,9 +148,9 @@ public class DatabaseRdf
 
         var countryNode = graph.CreateUriNode(countryUri);
 
-        var predicate = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSeach}"));
+        var predicate = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSearch}"));
 
-        var capitalPredicateLower = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSeach.ToLower()}"));
+        var capitalPredicateLower = graph.CreateUriNode(new Uri($"http://data.countries/{valueToSearch.ToLower()}"));
 
         var results = graph.GetTriplesWithSubjectPredicate(countryNode, predicate);
 
@@ -134,8 +159,7 @@ public class DatabaseRdf
         if (enumerable.Any())
         {
             var capitalNode = enumerable.First().Object;
-
-            if (capitalNode is ILiteralNode literalNode)
+            if (capitalNode is ILiteralNode)
             {
                 graph.Retract(enumerable.First());
                 graph.Assert(new Triple(countryNode, predicate, graph.CreateLiteralNode(newValue)));
@@ -143,7 +167,7 @@ public class DatabaseRdf
             }
         }
 
-        return false;
+        throw new NotFoundException("Unable to find value");
     }
 
     public void SaveGraph(string filePath)

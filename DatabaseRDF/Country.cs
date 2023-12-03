@@ -4,15 +4,25 @@ namespace DatabaseRDF;
 
 public class Country
 {
-    [Name("Country")] public string Name { get; set; }
+    public Country(int population, decimal longitude, decimal latitude, string name, string capital, string capitalType)
+    {
+        Population = population;
+        Longitude = longitude;
+        Latitude = latitude;
+        Name = name;
+        Capital = capital;
+        CapitalType = capitalType;
+    }
 
-    [Name("Capital City")] public string Capital { get; set; }
+    [Name("Country")] public string Name { get; } 
 
-    [Name("Latitude")] public decimal Latitude { get; set; }
+    [Name("Capital City")] public string Capital { get; } 
 
-    [Name("Longitude")] public decimal Longitude { get; set; }
+    [Name("Latitude")] public decimal Latitude { get; } 
 
-    [Name("Population")] public int Population { get; set; }
+    [Name("Longitude")] public decimal Longitude { get; } 
 
-    [Name("Capital Type")] public string CapitalType { get; set; }
+    [Name("Population")] public int Population { get; } 
+
+    [Name("Capital Type")] public string CapitalType { get; } 
 }
